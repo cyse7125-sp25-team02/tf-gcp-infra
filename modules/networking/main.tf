@@ -1,8 +1,7 @@
 resource "google_compute_network" "vpc" {
-  name                            = "${var.environment}-vpc"
-  auto_create_subnetworks         = var.vpc_auto_create_subnetworks
-  routing_mode                    = var.vpc_routing_mode
-  delete_default_routes_on_create = var.vpc_delete_default_routes_on_create
+  name                    = "${var.environment}-vpc"
+  auto_create_subnetworks = var.vpc_auto_create_subnetworks
+  routing_mode            = var.vpc_routing_mode
 }
 
 resource "google_compute_subnetwork" "private" {
@@ -42,6 +41,11 @@ resource "google_compute_router_nat" "nat" {
   region                             = var.region
   nat_ip_allocate_option             = var.nat_ip_option
   source_subnetwork_ip_ranges_to_nat = var.source_subnetwork_ip_ranges_to_nat
+
+  subnetwork {
+    name                    = google_compute_subnetwork.private.name
+    source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
+  }
 }
 
 resource "google_compute_firewall" "allow_bastion_ssh" {
@@ -60,31 +64,32 @@ resource "google_compute_firewall" "allow_bastion_ssh" {
 }
 
 # Add internal communication firewall rule
-# resource "google_compute_firewall" "internal" {
-#   name    = "${var.environment}-allow-internal"
-#   network = google_compute_network.vpc.id
-
-#   allow {
-#     protocol = "tcp"
-#     ports    = ["0-65535"]
-#   }
-
-#   source_ranges = [
-#     "10.0.0.0/18", # Private subnet
-#     "10.0.64.0/18" # Public subnet
-#   ]
-# }
-
-resource "google_compute_firewall" "gke_master" {
-  name    = "${var.environment}-gke-master"
+resource "google_compute_firewall" "internal" {
+  name    = "${var.environment}-allow-internal"
   network = google_compute_network.vpc.id
 
   allow {
-    protocol = var.tcp_protocol
-    ports    = var.firewall_gke_master_ports
+    protocol = "tcp"
+    ports    = ["0-65535"]
   }
 
-  source_ranges = var.firewall_gke_master_source_range # Master CIDR block
-  target_tags   = ["bastion"]
+  source_ranges = [
+    "10.0.0.0/18", # Private subnet
+    "10.0.64.0/18" # Public subnet
+  ]
 }
+
+resource "google_compute_firewall" "allow_health_checks_egress" {
+  name               = "${var.environment}-allow-health-checks-egress"
+  network            = google_compute_network.vpc.id
+  direction          = "EGRESS"
+  priority           = 1000
+  destination_ranges = ["0.0.0.0/0"] # Allow outbound internet access
+  target_tags        = ["allow-health-checks"]
+
+  allow {
+    protocol = "tcp"
+  }
+}
+
 

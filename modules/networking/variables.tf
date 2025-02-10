@@ -78,7 +78,7 @@ variable "nat_ip_option" {
 variable "source_subnetwork_ip_ranges_to_nat" {
   description = "Source subnetwork IP ranges to NAT"
   type        = string
-  default     = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  default     = "LIST_OF_SUBNETWORKS"
 }
 
 variable "ingress_direction" {
