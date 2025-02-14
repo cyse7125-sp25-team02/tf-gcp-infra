@@ -28,6 +28,7 @@ resource "google_compute_instance" "bastion" {
     apt-get install -y \
       kubectl \
       google-cloud-sdk-gke-gcloud-auth-plugin \
+      git \
       tinyproxy \
       vim \
       tmux
