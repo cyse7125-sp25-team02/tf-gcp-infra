@@ -10,7 +10,7 @@ module "networking" {
 }
 
 module "gke" {
-  source      = "../modules/gke"
+  source      =   "../modules/gke"
   project_id  = var.project_id
   environment = var.environment
 
