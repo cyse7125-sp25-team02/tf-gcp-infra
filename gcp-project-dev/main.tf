@@ -3,6 +3,13 @@ provider "google" {
   region  = var.region
 }
 
+module "cmek" {
+  source           = "../modules/cmek"
+  key_ring_name    = "csye7125"
+  crypto_key_names = ["gke_cluster", "sops"]
+}
+
+
 module "networking" {
   source      = "../modules/networking"
   environment = var.environment
