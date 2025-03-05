@@ -3,6 +3,13 @@ variable "project_id" {
   type        = string
 }
 
+variable "kubernetes_version" {
+  description = "The Kubernetes version for the GKE cluster"
+  type        = string
+  default     = "1.30.9"
+
+}
+
 variable "environment" {
   description = "Environment name (dev/prd)"
   type        = string
@@ -74,5 +81,11 @@ variable "bastion_host_cidr" {
   description = "CIDR block for the bastion host"
   type        = string
   default     = "10.0.64.0/18"
+}
+
+variable "gke_crypto_key_path" {
+  description = "The path to the KMS key used for encrypting the GKE database"
+  type        = string
+  default     = "projects/silicon-works-449817-n7/locations/us-east1/keyRings/csye7125/cryptoKeys/gke_cluster"
 
 }

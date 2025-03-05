@@ -6,6 +6,7 @@ resource "google_container_cluster" "primary" {
   deletion_protection      = var.cluster_deletion_protection
   remove_default_node_pool = var.cluster_remove_default_node_pool
   initial_node_count       = var.cluster_initial_node_count
+  min_master_version       = var.kubernetes_version
 
   private_cluster_config {
     enable_private_nodes    = var.enable_private_nodes
@@ -37,6 +38,11 @@ resource "google_container_cluster" "primary" {
     services_secondary_range_name = "service-ranges"
   }
 
+  database_encryption {
+    state    = "ENCRYPTED"
+    key_name = var.gke_crypto_key_path
+  }
+
   resource_labels = {
     environment = var.environment
     managed_by  = "terraform"
@@ -49,19 +55,24 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-resource "google_container_node_pool" "primary_nodes" {
-  name     = "${var.environment}-node-pool"
-  location = var.cluster_location
-  cluster  = google_container_cluster.primary.name
+data "google_compute_zones" "available" {
+  region = var.cluster_location
+  status = "UP"
+}
 
-  autoscaling {
-    min_node_count = 1
-    max_node_count = 3
-  }
+resource "google_container_node_pool" "primary_nodes" {
+  count          = 3
+  name           = "${var.environment}-node-pool${count.index + 1}"
+  location       = var.cluster_location
+  cluster        = google_container_cluster.primary.name
+  node_locations = [data.google_compute_zones.available.names[count.index]] # One zone per node pool
+  node_count     = 1
 
   node_config {
     machine_type = var.machine_type
     image_type   = "COS_CONTAINERD"
+    disk_type    = "pd-standard" # Explicitly use standard disks to avoid SSD quota
+    disk_size_gb = 30
 
     service_account = google_service_account.gke_sa.email
 
@@ -71,6 +82,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
     labels = {
       environment = var.environment
+      node_pool   = "pool-${count.index + 1}"
     }
 
     workload_metadata_config {
@@ -95,4 +107,18 @@ resource "google_container_node_pool" "primary_nodes" {
 resource "google_service_account" "gke_sa" {
   account_id   = "${var.environment}-gke-sa"
   display_name = "GKE Service Account"
+}
+
+data "google_project" "project" {}
+
+resource "google_project_iam_member" "compute_sa_cmek_permission" {
+  project = data.google_project.project.project_id
+  role    = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member  = "serviceAccount:service-${data.google_project.project.number}@compute-system.iam.gserviceaccount.com"
+}
+
+resource "google_kms_crypto_key_iam_member" "gke_database_encryption_key" {
+  crypto_key_id = var.gke_crypto_key_path
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:service-${data.google_project.project.number}@container-engine-robot.iam.gserviceaccount.com"
 }

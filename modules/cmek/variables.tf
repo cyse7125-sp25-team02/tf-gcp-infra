@@ -6,7 +6,7 @@ variable "key_ring_name" {
 variable "location" {
   description = "The multi-region location for the KMS key ring."
   type        = string
-  default     = "us" # Multi-region for all US regions
+  default     = "us-east1"
 }
 
 variable "crypto_key_names" {
