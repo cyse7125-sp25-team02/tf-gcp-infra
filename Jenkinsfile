@@ -72,6 +72,16 @@ pipeline {
                         }
                     }
                 }
+
+                stage('CMEK Module') {
+                    steps {
+                        dir('modules/cmek') {
+                            sh 'terraform init -no-color'
+                            sh 'terraform fmt -check -no-color'
+                            sh 'terraform validate -no-color'
+                        }
+                    }
+                }
             }
         }
     }
