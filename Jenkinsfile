@@ -20,6 +20,7 @@ pipeline {
                         sh 'terraform init -no-color'
                         sh 'terraform fmt -check -no-color'
                         sh 'terraform validate -no-color'
+                    }
                 }
             }
         }
