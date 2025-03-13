@@ -15,7 +15,7 @@ pipeline {
         stage('Validate Dev Environment') {
             steps {
                 dir('gcp-project-dev') {
-                    withEnv(["GOOGLE_APPLICATION_CREDENTIALS=${env.GCP_SERVICE_ACCOUNT_KEY}"]) {
+                    withEnv(["GOOGLE_APPLICATION_CREDENTIALS=\$GCP_SERVICE_ACCOUNT_KEY"]) {
                         sh 'gcloud auth activate-service-account --key-file=$GCP_SERVICE_ACCOUNT_KEY'
                         sh 'terraform init -no-color'
                         sh 'terraform fmt -check -no-color'
