@@ -8,6 +8,7 @@ pipeline {
     environment {
         TF_IN_AUTOMATION = 'true'
         TF_INPUT = 'false'
+        GCP_SERVICE_ACCOUNT_KEY = credentials('gcp-service-account-key')
     }
     
     stages {
@@ -24,6 +25,7 @@ pipeline {
         stage('Validate DNS Environment') {
             steps {
                 dir('gcp-project-dns') {
+                    sh 'gcloud auth activate-service-account --key-file=$GCP_SERVICE_ACCOUNT_KEY'
                     sh 'terraform init -no-color'
                     sh 'terraform fmt -check -no-color'
                     sh 'terraform validate -no-color'
