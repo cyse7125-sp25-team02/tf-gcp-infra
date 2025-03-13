@@ -8,18 +8,19 @@ pipeline {
     environment {
         TF_IN_AUTOMATION = 'true'
         TF_INPUT = 'false'
-        GCP_SERVICE_ACCOUNT_KEY = credentials('gcp-service-account-key')
     }
     
     stages {
         stage('Validate Dev Environment') {
             steps {
                 dir('gcp-project-dev') {
-                    withEnv(["GOOGLE_APPLICATION_CREDENTIALS=\$GCP_SERVICE_ACCOUNT_KEY"]) {
-                        sh 'gcloud auth activate-service-account --key-file=$GCP_SERVICE_ACCOUNT_KEY'
-                        sh 'terraform init -no-color'
-                        sh 'terraform fmt -check -no-color'
-                        sh 'terraform validate -no-color'
+                    withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GCP_KEY_FILE')]) {
+                        withEnv(["GOOGLE_APPLICATION_CREDENTIALS=${GCP_KEY_FILE}"]) {
+                            sh 'gcloud auth activate-service-account --key-file=$GCP_KEY_FILE'
+                            sh 'terraform init -no-color'
+                            sh 'terraform fmt -check -no-color'
+                            sh 'terraform validate -no-color'
+                        }
                     }
                 }
             }
