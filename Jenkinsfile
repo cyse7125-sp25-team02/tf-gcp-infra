@@ -8,6 +8,7 @@ pipeline {
     environment {
         TF_IN_AUTOMATION = 'true'
         TF_INPUT = 'false'
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account-key')
     }
     
     stages {
@@ -41,36 +42,42 @@ pipeline {
             }
         }
         
-        stage('Validate Modules') {
-            parallel {
-                stage('Bastion Module') {
-                    steps {
-                        dir('modules/bastion') {
-                            sh 'terraform init -no-color'
-                            sh 'terraform fmt -check -no-color'
-                            sh 'terraform validate -no-color'
-                        }
-                    }
+        stage('Validate Bastion Module') {
+            steps {
+                dir('modules/bastion') {
+                    sh 'terraform init -no-color'
+                    sh 'terraform fmt -check -no-color'
+                    sh 'terraform validate -no-color'
                 }
-                
-                stage('GKE Module') {
-                    steps {
-                        dir('modules/gke') {
-                            sh 'terraform init -no-color'
-                            sh 'terraform fmt -check -no-color'
-                            sh 'terraform validate -no-color'
-                        }
-                    }
+            }
+        }
+        
+        stage('Validate GKE Module') {
+            steps {
+                dir('modules/gke') {
+                    sh 'terraform init -no-color'
+                    sh 'terraform fmt -check -no-color'
+                    sh 'terraform validate -no-color'
                 }
-                
-                stage('Networking Module') {
-                    steps {
-                        dir('modules/networking') {
-                            sh 'terraform init -no-color'
-                            sh 'terraform fmt -check -no-color'
-                            sh 'terraform validate -no-color'
-                        }
-                    }
+            }
+        }
+        
+        stage('Validate Networking Module') {
+            steps {
+                dir('modules/networking') {
+                    sh 'terraform init -no-color'
+                    sh 'terraform fmt -check -no-color'
+                    sh 'terraform validate -no-color'
+                }
+            }
+        }
+
+        stage('Validate CMEK Module') {
+            steps {
+                dir('modules/cmek') {
+                    sh 'terraform init -no-color'
+                    sh 'terraform fmt -check -no-color'
+                    sh 'terraform validate -no-color'
                 }
             }
         }
