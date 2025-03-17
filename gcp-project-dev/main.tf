@@ -33,15 +33,3 @@ module "bastion" {
   vpc_id           = module.networking.vpc_id
   public_subnet_id = module.networking.public_subnet_id
 }
-
-# Create the DNS zone
-resource "google_dns_managed_zone" "dns_zone" {
-  name        = var.zone_name
-  dns_name    = var.dns_name
-  description = "${var.dns_zone_description_prefix} ${var.dns_name}"
-  visibility  = var.dns_visibility
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
