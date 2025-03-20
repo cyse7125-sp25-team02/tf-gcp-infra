@@ -30,7 +30,7 @@ resource "google_container_cluster" "primary" {
   }
 
   release_channel {
-    channel = "REGULAR"
+    channel = "UNSPECIFIED"
   }
 
   ip_allocation_policy {
@@ -67,6 +67,7 @@ resource "google_container_node_pool" "primary_nodes" {
   cluster        = google_container_cluster.primary.name
   node_locations = [data.google_compute_zones.available.names[count.index]] # One zone per node pool
   node_count     = 1
+  version        = var.kubernetes_version
 
   node_config {
     machine_type = var.machine_type
@@ -97,6 +98,10 @@ resource "google_container_node_pool" "primary_nodes" {
     create = "30m"
     update = "30m"
     delete = "30m"
+  }
+
+  management {
+    auto_upgrade = false # Disable auto-upgrades for nodes
   }
 
   depends_on = [

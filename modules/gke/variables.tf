@@ -6,7 +6,7 @@ variable "project_id" {
 variable "kubernetes_version" {
   description = "The Kubernetes version for the GKE cluster"
   type        = string
-  default     = "1.30.9"
+  default     = "1.30.9-gke.1127000"
 
 }
 
