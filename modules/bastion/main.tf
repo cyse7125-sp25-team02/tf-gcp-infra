@@ -71,7 +71,9 @@ resource "google_project_iam_member" "bastion_sa_roles" {
     "roles/container.viewer",
     "roles/container.developer",
     "roles/container.clusterViewer",
-    "roles/compute.networkViewer"
+    "roles/compute.networkViewer",
+    "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+    "roles/iam.serviceAccountAdmin"
   ])
 
   project = var.project_id

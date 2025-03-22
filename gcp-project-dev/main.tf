@@ -9,7 +9,6 @@ module "cmek" {
   crypto_key_names = ["gke_cluster", "sops"]
 }
 
-
 module "networking" {
   source      = "../modules/networking"
   environment = var.environment
@@ -32,4 +31,10 @@ module "bastion" {
   environment      = var.environment
   vpc_id           = module.networking.vpc_id
   public_subnet_id = module.networking.public_subnet_id
+}
+
+module "workload_identity" {
+  source                  = "../modules/workload-identity"
+  project_id              = var.project_id
+  environment             = var.environment
 }
