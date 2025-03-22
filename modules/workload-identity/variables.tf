@@ -11,7 +11,7 @@ variable "environment" {
 variable "gcs_bucket_name" {
   description = "The name of the GCS bucket for api-server"
   type        = string
-  default = "csye7125-trace-data"
+  default     = "csye7125-trace-data"
 }
 
 variable "k8s_namespace" {

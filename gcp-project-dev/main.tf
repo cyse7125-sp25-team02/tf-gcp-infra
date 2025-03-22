@@ -34,7 +34,7 @@ module "bastion" {
 }
 
 module "workload_identity" {
-  source                  = "../modules/workload-identity"
-  project_id              = var.project_id
-  environment             = var.environment
+  source      = "../modules/workload-identity"
+  project_id  = var.project_id
+  environment = var.environment
 }

@@ -8,7 +8,7 @@ resource "google_service_account" "api_server_gcs" {
 # Grant the GSA permissions to access the GCS bucket
 resource "google_storage_bucket_iam_member" "gcs_access" {
   bucket = var.gcs_bucket_name
-  role   = "roles/storage.objectAdmin"  # Full control over objects in the bucket
+  role   = "roles/storage.objectAdmin" # Full control over objects in the bucket
   member = "serviceAccount:${google_service_account.api_server_gcs.email}"
 }
 
