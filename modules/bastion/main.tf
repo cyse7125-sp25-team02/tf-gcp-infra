@@ -32,6 +32,18 @@ resource "google_compute_instance" "bastion" {
       tinyproxy \
       vim \
       tmux
+
+    # Install SOPS
+    curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
+    mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
+    chmod +x /usr/local/bin/sops
+    sops --version
+
+    # Install Helm
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    chmod +x get_helm.sh
+    ./get_helm.sh
+    helm version
     
     # Configure tinyproxy for kubectl proxy
     echo "Allow localhost" >> /etc/tinyproxy/tinyproxy.conf

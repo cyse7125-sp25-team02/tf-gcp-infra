@@ -61,7 +61,7 @@ data "google_compute_zones" "available" {
 }
 
 resource "google_container_node_pool" "primary_nodes" {
-  count          = 3
+  count          = 1
   name           = "${var.environment}-node-pool${count.index + 1}"
   location       = var.cluster_location
   cluster        = google_container_cluster.primary.name
@@ -70,12 +70,12 @@ resource "google_container_node_pool" "primary_nodes" {
   version        = var.kubernetes_version
 
   node_config {
-    machine_type = var.machine_type
-    image_type   = "COS_CONTAINERD"
-    disk_type    = "pd-standard" # Explicitly use standard disks to avoid SSD quota
-    disk_size_gb = 30
-
-    service_account = google_service_account.gke_sa.email
+    machine_type      = var.machine_type
+    image_type        = "COS_CONTAINERD"
+    disk_type         = "pd-standard" # Explicitly use standard disks to avoid SSD quota
+    disk_size_gb      = 30
+    boot_disk_kms_key = var.gke_crypto_key_path
+    service_account   = google_service_account.gke_sa.email
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
