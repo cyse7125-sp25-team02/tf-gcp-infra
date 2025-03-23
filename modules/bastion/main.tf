@@ -65,24 +65,11 @@ resource "google_service_account" "bastion_sa" {
   display_name = "Bastion Host Service Account"
 }
 
-resource "google_project_iam_member" "gke_sa_roles" {
-  for_each = toset([
-    "roles/container.clusterViewer",
-    "roles/container.developer",
-    "roles/storage.objectViewer"
-  ])
-
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.bastion_sa.email}"
-}
-
 # Bastion Service Account IAM
 resource "google_project_iam_member" "bastion_sa_roles" {
   for_each = toset([
-    "roles/container.viewer",
-    "roles/container.developer",
-    "roles/container.clusterViewer",
+    "roles/storage.objectViewer",
+    "roles/container.admin",
     "roles/compute.networkViewer",
     "roles/cloudkms.cryptoKeyEncrypterDecrypter",
     "roles/iam.serviceAccountAdmin"
