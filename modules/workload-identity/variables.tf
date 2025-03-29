@@ -8,20 +8,18 @@ variable "environment" {
   type        = string
 }
 
-variable "gcs_bucket_name" {
-  description = "The name of the GCS bucket for api-server"
-  type        = string
-  default     = "csye7125-trace-data"
+variable "gcs_bucket_names" {
+  type    = set(string)
+  default = ["csye7125-trace-data","db-backup-schema"]
 }
 
-variable "k8s_namespace" {
-  description = "The Kubernetes namespace for the api-server"
-  type        = string
-  default     = "api-server"
-}
-
-variable "k8s_service_account_name" {
-  description = "The name of the Kubernetes Service Account"
-  type        = string
-  default     = "api-server-ksa"
+variable "ksa_mappings" {
+  type = map(object({
+    namespace          = string
+    service_account_name = string
+  }))
+  default = {
+    "ksa1" = { namespace = "api-server-app", service_account_name = "api-server-ksa" }
+    "ksa2" = { namespace = "db-backup-operator", service_account_name = "db-backup-operator-ksa" }
+  }
 }
