@@ -3,12 +3,6 @@ provider "google" {
   region  = var.region
 }
 
-module "cmek" {
-  source           = "../modules/cmek"
-  key_ring_name    = "csye7125"
-  crypto_key_names = ["gke_cluster", "sops"]
-}
-
 module "networking" {
   source      = "../modules/networking"
   environment = var.environment
@@ -33,8 +27,31 @@ module "bastion" {
   public_subnet_id = module.networking.public_subnet_id
 }
 
-module "workload_identity" {
-  source      = "../modules/workload-identity"
-  project_id  = var.project_id
-  environment = var.environment
+# Fetch existing buckets using a data source
+data "google_storage_bucket" "buckets" {
+  for_each = var.gcs_bucket_names
+  name     = each.value
+}
+
+# Create the Google Service Account (GSA) for the api-server
+resource "google_service_account" "api_server_gcs" {
+  account_id   = "${var.environment}-api-server-gcs"
+  display_name = "API Server GCS Service Account"
+  project      = var.project_id
+}
+
+# Grant the GSA permissions to access the GCS bucket
+resource "google_storage_bucket_iam_member" "gcs_access" {
+  for_each = var.gcs_bucket_names
+  bucket   = data.google_storage_bucket.buckets[each.value].name
+  role     = "roles/storage.objectAdmin" # Full control over objects in the bucket
+  member   = "serviceAccount:${google_service_account.api_server_gcs.email}"
+}
+
+# Bind the GSA to the KSA using Workload Identity (roles/iam.workloadIdentityUser)
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  for_each           = var.ksa_mappings
+  service_account_id = google_service_account.api_server_gcs.id
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value.namespace}/${each.value.service_account_name}]"
 }
