@@ -33,6 +33,8 @@ resource "google_compute_instance" "bastion" {
       vim \
       tmux
 
+    gcloud container clusters get-credentials ${var.environment}-gke-cluster --zone us-east1 --internal-ip
+
     # Install SOPS
     curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
     mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
