@@ -25,7 +25,7 @@ module "bastion" {
   environment      = var.environment
   vpc_id           = module.networking.vpc_id
   public_subnet_id = module.networking.public_subnet_id
-  gke_cluster_name = module.gke.cluster_name
+  gke_cluster_name = "dev-gke-cluster"
   depends_on       = [module.gke]
 }
 

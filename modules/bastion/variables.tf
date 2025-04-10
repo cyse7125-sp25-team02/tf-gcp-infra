@@ -26,4 +26,5 @@ variable "public_subnet_id" {
 variable "gke_cluster_name" {
   description = "Name of the GKE cluster"
   type        = string
+  default     = "dev-gke-cluster"
 }

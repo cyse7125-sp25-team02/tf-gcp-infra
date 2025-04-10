@@ -144,7 +144,6 @@ resource "google_compute_instance" "bastion" {
     scopes = ["cloud-platform"]
   }
 
-  depends_on = [var.gke_cluster_name]
 }
 
 # Create dedicated service account for bastion
