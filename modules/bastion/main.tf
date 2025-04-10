@@ -88,7 +88,7 @@ resource "google_compute_instance" "bastion" {
     curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.1 sh -
     mv istio-1.25.1 /opt/istio-1.25.1 || { echo "Failed to move Istio"; exit 1; }
     cd /opt/istio-1.25.1 || { echo "Failed to cd into Istio dir"; exit 1; }
-    echo "export PATH=$(pwd)/bin:\$PATH" > /etc/profile.d/istio.sh
+    echo "export PATH=/opt/istio-1.25.1/bin:\$PATH" > /etc/profile.d/istio.sh
     chmod +x /etc/profile.d/istio.sh
     export PATH="/opt/istio-1.25.1/bin:$PATH"
     ln -s /opt/istio-1.25.1/bin/istioctl /usr/local/bin/istioctl
@@ -133,6 +133,11 @@ resource "google_compute_instance" "bastion" {
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/prometheus.yaml || echo "Failed to apply Prometheus"
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/grafana.yaml || echo "Failed to apply Grafana"
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/kiali.yaml || echo "Failed to apply Kiali"
+
+    # Installing cert-manager
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+    helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.12.16 --set installCRDs=true
 
     echo "Setup complete. Use 'export KUBECONFIG=/root/.kube/config-internal' for internal IP access via SSH."
   EOF
