@@ -8,6 +8,26 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = var.cluster_initial_node_count
   min_master_version       = var.kubernetes_version
 
+  # Enable Logging Configuration
+  logging_config {
+    enable_components = [
+      "SYSTEM_COMPONENTS", # System logs
+      "WORKLOADS"          # Application logs
+    ]
+  }
+
+  # Enable Monitoring Configuration
+  monitoring_config {
+    enable_components = [
+      "SYSTEM_COMPONENTS" # System metrics
+    ]
+
+    # Enable Managed Prometheus for custom/third-party metrics
+    managed_prometheus {
+      enabled = true
+    }
+  }
+
   private_cluster_config {
     enable_private_nodes    = var.enable_private_nodes
     enable_private_endpoint = var.enable_private_endpoint
@@ -126,4 +146,20 @@ resource "google_kms_crypto_key_iam_member" "gke_database_encryption_key" {
   crypto_key_id = var.gke_crypto_key_path
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${data.google_project.project.number}@container-engine-robot.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "gmp_collector_metric_writer" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.gke_sa.email}"
+}
+
+resource "google_project_iam_member" "gmp_collector_log_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.gke_sa.email}"
+}
+
+output "cluster_name" {
+  value = google_container_cluster.primary.name
 }

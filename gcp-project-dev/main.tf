@@ -25,6 +25,8 @@ module "bastion" {
   environment      = var.environment
   vpc_id           = module.networking.vpc_id
   public_subnet_id = module.networking.public_subnet_id
+  gke_cluster_name = module.gke.cluster_name
+  depends_on       = [module.gke]
 }
 
 # Fetch existing buckets using a data source
@@ -54,4 +56,10 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   service_account_id = google_service_account.api_server_gcs.id
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value.namespace}/${each.value.service_account_name}]"
+}
+
+resource "google_project_iam_member" "gmp_collector_metric_writer" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.api_server_gcs.email}"
 }

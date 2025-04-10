@@ -36,3 +36,14 @@ spec:
       meshID: "my-mesh"
     sidecarInjectorWebhook:
       enableNamespacesByDefault: false  # Only inject in labeled namespaces
+
+-- 
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+ 
