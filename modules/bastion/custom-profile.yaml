@@ -1,0 +1,49 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: custom-istio-profile
+  namespace: istio-system
+spec:
+  profile: minimal
+  components:
+    pilot:
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+    cni:
+      enabled: false  # Disable CNI to avoid installation timeout
+  values:
+    global:
+      proxy:
+        autoInject: enabled  # Automatically inject sidecars into pods
+      meshID: "my-mesh"
+    sidecarInjectorWebhook:
+      enableNamespacesByDefault: false  # Only inject in labeled namespaces
+
+-- 
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+ 

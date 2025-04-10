@@ -50,3 +50,17 @@ This repository has the following branch protection rules:
 1. Compute Engine API
 2. DNS API
 3. Kubernetes Engine API
+
+## Filters for postgres metrics in GCP PromQL:
+```pg_stat_database_tup_returned{namespace="api-server-db"}```
+```pg_stat_activity_count{namespace="api-server-db"}```
+
+## Logs for postgres
+```
+resource.type="k8s_container"
+resource.labels.cluster_name="dev-gke-cluster"
+resource.labels.namespace_name="api-server-db"
+resource.labels.pod_name="api-server-postgres-0"
+```
+```kubectl exec -it -n api-server-db api-server-postgres-0 -c postgres -- psql -U admin -d api```
+SELECT 1; or run any commands
