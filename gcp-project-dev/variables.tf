@@ -46,6 +46,7 @@ variable "ksa_mappings" {
   default = {
     "ksa1" = { namespace = "api-server-app", service_account_name = "api-server-ksa" }
     "ksa2" = { namespace = "db-backup-operator", service_account_name = "db-backup-operator-ksa" }
-    "ksa3" = { namespace = "gmp-system", service_account_name = "collector" }
+    "ksa3" = { namespace = "gmp-system", service_account_name = "collector" },
+    "ksa4" = { namespace = "trace-processor", service_account_name = "trace-processor-ksa" }
   }
 }

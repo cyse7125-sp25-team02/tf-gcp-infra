@@ -21,7 +21,7 @@ spec:
       enabled: true
       k8s:
         service:
-          loadBalancerIP: "35.211.89.87"  # Your reserved static IP
+          loadBalancerIP: "34.139.204.151"  # Your reserved static IP
         resources:
           requests:
             memory: "512Mi"
