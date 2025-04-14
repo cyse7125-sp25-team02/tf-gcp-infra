@@ -44,7 +44,7 @@ variable "master_ipv4_cidr_block" {
 variable "machine_type" {
   description = "Machine type for the GKE nodes"
   type        = string
-  default     = "e2-standard-2"
+  default     = "e2-standard-4"
 }
 
 variable "cluster_deletion_protection" {

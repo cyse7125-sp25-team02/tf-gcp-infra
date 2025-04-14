@@ -50,13 +50,21 @@ resource "google_compute_instance" "bastion" {
     curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
     mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
     chmod +x /usr/local/bin/sops
+    # Ensure non-root users can execute SOPS
+    chmod o+rx /usr/local/bin/sops
     sops --version
 
     # Install Helm
     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
     chmod +x get_helm.sh
     ./get_helm.sh
+    # By default, get_helm.sh installs helm to /usr/local/bin/helm.
+    # Ensure non-root users can execute Helm
+    chmod o+rx /usr/local/bin/helm
     helm version
+
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo update
 
     # Create admin user if it doesn't exist
     if ! id "admin" >/dev/null 2>&1; then
@@ -87,6 +95,11 @@ resource "google_compute_instance" "bastion" {
     echo "Installing Istio..."
     curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.1 sh -
     mv istio-1.25.1 /opt/istio-1.25.1 || { echo "Failed to move Istio"; exit 1; }
+
+    # Adjust directory permissions so non-root users can execute istioctl
+    chmod o+rx /opt/istio-1.25.1
+    chmod o+rx /opt/istio-1.25.1/bin
+
     cd /opt/istio-1.25.1 || { echo "Failed to cd into Istio dir"; exit 1; }
     echo "export PATH=/opt/istio-1.25.1/bin:\$PATH" > /etc/profile.d/istio.sh
     chmod +x /etc/profile.d/istio.sh
@@ -133,6 +146,18 @@ resource "google_compute_instance" "bastion" {
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/prometheus.yaml || echo "Failed to apply Prometheus"
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/grafana.yaml || echo "Failed to apply Grafana"
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/addons/kiali.yaml || echo "Failed to apply Kiali"
+
+    # Install CRD for Istio
+    echo "Installing Istio CRDs..."
+    cat << 'ISTIO_CRD' > /tmp/istio-crd.yaml
+    ${file("${path.module}/istio-crd.yaml")}
+    ISTIO_CRD
+
+    kubectl apply -f /tmp/istio-crd.yaml || { 
+        echo "Failed to apply Istio CRD - dumping diagnostics"
+        kubectl cluster-info
+        exit 1
+    }
 
     # Installing cert-manager
     helm repo add jetstack https://charts.jetstack.io
