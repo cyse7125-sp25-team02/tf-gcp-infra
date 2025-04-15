@@ -58,6 +58,33 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value.namespace}/${each.value.service_account_name}]"
 }
 
+# Create google vertex ai service account
+resource "google_service_account" "vertex_ai" {
+  account_id   = "${var.environment}-vertex-ai"
+  display_name = "Vertex AI Service Account"
+  project      = var.project_id
+}
+
+# Grant roles/aiplatform.user and storage.objectViewer to dev-vertex-ai
+resource "google_project_iam_member" "vertex_ai_user" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.vertex_ai.email}"
+}
+
+resource "google_project_iam_member" "vertex_ai_storage" {
+  project = var.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.vertex_ai.email}"
+}
+
+# Bind the Google Vertex AI service account to the KSA using Workload Identity
+resource "google_service_account_iam_member" "vertex_ai_workload_identity_binding" {
+  service_account_id = google_service_account.vertex_ai.id
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[trace-processor/trace-processor-ksa]"
+}
+
 resource "google_project_iam_member" "gmp_collector_metric_writer" {
   project = var.project_id
   role    = "roles/monitoring.metricWriter"
