@@ -85,6 +85,12 @@ resource "google_service_account_iam_member" "vertex_ai_workload_identity_bindin
   member             = "serviceAccount:${var.project_id}.svc.id.goog[trace-processor/trace-processor-ksa]"
 }
 
+resource "google_service_account_iam_member" "vertex_ai_streamlit_workload_identity_binding" {
+  service_account_id = google_service_account.vertex_ai.id
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[streamlit-llm-interface/streamlit-llm-interface-ksa]"
+}
+
 resource "google_project_iam_member" "gmp_collector_metric_writer" {
   project = var.project_id
   role    = "roles/monitoring.metricWriter"
